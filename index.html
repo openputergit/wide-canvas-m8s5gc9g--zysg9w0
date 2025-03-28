@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Kitty Security Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #fce4ec;
+        }
+        .hello-kitty-card {
+            background-color: white;
+            border: 3px solid #ff69b4;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(255, 105, 180, 0.2);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .kitty-bounce {
+            animation: bounce 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-pink-600 mb-2">🐱 Cyber Kitty Security Adventure 🐱</h1>
+            <p class="text-gray-600">Learn cybersecurity with Hello Kitty!</p>
+        </div>
+
+        <!-- Game Container -->
+        <div id="gameContainer" class="hello-kitty-card p-6 mb-8">
+            <!-- Module Selection -->
+            <div id="moduleSelect" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Modules will be inserted here -->
+            </div>
+
+            <!-- Quiz Section (Initially Hidden) -->
+            <div id="quizSection" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <button id="prevBtn" class="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600">
+                        <i class="bi bi-arrow-left"></i> Previous
+                    </button>
+                    <span id="questionCounter" class="text-pink-600 font-bold"></span>
+                    <button id="nextBtn" class="bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600">
+                        Next <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div id="questionContainer" class="mb-6">
+                    <h3 id="question" class="text-xl font-bold mb-4"></h3>
+                    <div id="options" class="space-y-2"></div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <button id="learnMoreBtn" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">
+                        <i class="bi bi-book"></i> Learn More
+                    </button>
+                    <button id="voiceSearchBtn" class="bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-600">
+                        <i class="bi bi-mic"></i> Voice Search
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" class="hello-kitty-card p-6">
+            <h2 class="text-2xl font-bold text-pink-600 mb-4">Your Progress</h2>
+            <div id="progressBars" class="space-y-4">
+                <!-- Progress bars will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cybersecurity modules with questions
+        const modules = [
+            {
+                name: "Network Security",
+                icon: "🌐",
+                questions: [
+                    {
+                        question: "What is a firewall?",
+                        options: [
+                            "A physical wall that prevents fire",
+                            "A network security device that monitors traffic",
+                            "A type of computer virus",
+                            "A backup storage device"
+                        ],
+                        correct: 1,
+                        explanation: "A firewall is a network security device that monitors and filters incoming and outgoing network traffic based on predetermined security rules.",
+                        learnMoreUrl: "https://www.google.com/search?q=what+is+network+firewall"
+                    },
+                    // More questions would be added here
+                ]
+            },
+            {
+                name: "Malware Protection",
+                icon: "🛡️",
+                questions: [
+                    {
+                        question: "What is ransomware?",
+                        options: [
+                            "A type of computer game",
+                            "Malware that encrypts files and demands payment",
+                            "A security tool",
+                            "An antivirus program"
+                        ],
+                        correct: 1,
+                        explanation: "Ransomware is a type of malicious software that encrypts a victim's files and demands payment for the decryption key.",
+                        learnMoreUrl: "https://www.google.com/search?q=what+is+ransomware"
+                    },
+                    // More questions would be added here
+                ]
+            },
+            // More modules would be added here
+        ];
+
+        let currentModule = null;
+        let currentQuestionIndex = 0;
+        let moduleProgress = {};
+
+        // Initialize progress for each module
+        modules.forEach(module => {
+            moduleProgress[module.name] = {
+                completed: 0,
+                correct: 0
+            };
+        });
+
+        // Function to render module selection
+        function renderModuleSelection() {
+            const moduleSelect = document.getElementById('moduleSelect');
+            moduleSelect.innerHTML = modules.map((module, index) => `
+                <div class="hello-kitty-card p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                     onclick="startModule(${index})">
+                    <div class="text-4xl mb-2 kitty-bounce">${module.icon}</div>
+                    <h3 class="text-xl font-bold text-pink-600">${module.name}</h3>
+                    <p class="text-gray-600">20 questions</p>
+                </div>
+            `).join('');
+        }
+
+        // Function to start a module
+        function startModule(moduleIndex) {
+            currentModule = modules[moduleIndex];
+            currentQuestionIndex = 0;
+            document.getElementById('moduleSelect').classList.add('hidden');
+            document.getElementById('quizSection').classList.remove('hidden');
+            showQuestion();
+        }
+
+        // Function to show current question
+        function showQuestion() {
+            const question = currentModule.questions[currentQuestionIndex];
+            document.getElementById('question').textContent = question.question;
+            document.getElementById('questionCounter').textContent = 
+                `Question ${currentQuestionIndex + 1}/${currentModule.questions.length}`;
+
+            const options = document.getElementById('options');
+            options.innerHTML = question.options.map((option, index) => `
+                <div class="hello-kitty-card p-3 cursor-pointer hover:bg-pink-100"
+                     onclick="checkAnswer(${index})">
+                    ${option}
+                </div>
+            `).join('');
+        }
+
+        // Function to check answer
+        function checkAnswer(selectedIndex) {
+            const question = currentModule.questions[currentQuestionIndex];
+            if (selectedIndex === question.correct) {
+                moduleProgress[currentModule.name].correct++;
+                alert('Correct! ' + question.explanation);
+            } else {
+                alert('Incorrect. ' + question.explanation);
+            }
+            moduleProgress[currentModule.name].completed++;
+            updateProgress();
+        }
+
+        // Function to update progress
+        function updateProgress() {
+            const progressBars = document.getElementById('progressBars');
+            progressBars.innerHTML = Object.entries(moduleProgress).map(([name, progress]) => `
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-pink-600">${name}</span>
+                        <span class="text-pink-600">${progress.correct}/${progress.completed}</span>
+                    </div>
+                    <div class="w-full bg-pink-200 rounded-full h-2.5">
+                        <div class="bg-pink-600 h-2.5 rounded-full progress-bar"
+                             style="width: ${(progress.completed / 20) * 100}%"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Check for certificate eligibility
+            const completedModules = Object.values(moduleProgress)
+                .filter(p => p.completed >= 5).length;
+            if (completedModules >= 5) {
+                alert('Congratulations! You've earned your Cyber Kitty Security Certificate! 🎉');
+            }
+        }
+
+        // Voice search functionality
+        document.getElementById('voiceSearchBtn').addEventListener('click', () => {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.onresult = (event) => {
+                    const searchQuery = event.results[0][0].transcript;
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank');
+                };
+                recognition.start();
+            } else {
+                alert('Voice search is not supported in your browser.');
+            }
+        });
+
+        // Learn More button functionality
+        document.getElementById('learnMoreBtn').addEventListener('click', () => {
+            if (currentModule && currentModule.questions[currentQuestionIndex]) {
+                window.open(currentModule.questions[currentQuestionIndex].learnMoreUrl, '_blank');
+            }
+        });
+
+        // Navigation buttons
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentQuestionIndex < currentModule.questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            }
+        });
+
+        // Initialize the game
+        renderModuleSelection();
+        updateProgress();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
